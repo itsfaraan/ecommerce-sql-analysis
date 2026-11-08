@@ -146,7 +146,8 @@ ecommerce-sql-analysis/
 │   ├── 02_revenue_analysis.sql
 │   ├── 03_product_analysis.sql
 │   ├── 04_customer_analysis.sql
-│   └── 05_advanced_sql.sql
+│   ├── 05_advanced_sql.sql
+│   └── 06_kpi_validation.sql
 ├── README.md
 └── .gitignore
 ```
@@ -159,6 +160,7 @@ ecommerce-sql-analysis/
 4. Run `sql/02_revenue_analysis.sql` and `sql/03_product_analysis.sql` for delivered-order and category KPIs.
 5. Run `sql/04_customer_analysis.sql` to verify customer denominators and repeat behavior.
 6. Run `sql/05_advanced_sql.sql` for month-over-month growth, customer ranking, and running totals.
+7. Run [`sql/06_kpi_validation.sql`](sql/06_kpi_validation.sql) to reconcile delivered-order value, customer denominators, October/November 2017 growth, and key identifier uniqueness. Compare the results with the reported KPI table before publishing or merging.
 
 **Reproducibility note:** This repository contains analytical queries, not a complete ETL pipeline or database schema creation scripts. Table import and setup are prerequisites.
 
