@@ -62,32 +62,41 @@ The source CSV files are not committed to this repository. The SQL expects these
 - Product-category revenue uses **item price only**, so it is not directly comparable with freight-inclusive total order value without adjusting the definition.
 - Joining order items to payment rows can multiply values when an order has multiple items or payments. Queries avoid that join when calculating item-based revenue.
 
-## Reported Key Metrics
 
-The following are figures previously reported for this project; rerun the linked SQL on the source data to independently reproduce them.
 
-| KPI | Reported value | Definition |
-| --- | ---: | --- |
-| Delivered orders | 96,478 | Distinct delivered order IDs |
-| Product revenue | 13,221,498.11 | Sum of item prices for delivered orders |
-| Freight value | 2,198,275.64 | Sum of freight for delivered orders |
-| Total order value | 15,419,773.75 | Product revenue + freight |
-| Average order value | 159.83 | Total order value / delivered orders |
-| Unique customers (all customer records) | 96,096 | **Not** the delivered-only repeat-rate denominator |
-| Repeat customer rate | Approximately 3.0% | Delivered-only customers, identified by `customer_unique_id` |
-| Average delivered orders per customer | Approximately 1.03 | Delivered-only customers |
+## Validated Key Metrics
 
-To obtain the **delivered-order unique-customer count and repeat-customer denominator**, run the validation query in [`04_customer_analysis.sql`](sql/04_customer_analysis.sql). The all-record count of 96,096 must not be substituted for that denominator.
+The following KPIs were validated by executing `sql/06_kpi_validation.sql` against the local PostgreSQL Olist database on November 13, 2026.
 
+| KPI | Validated Value |
+| --- | ---: |
+| Delivered orders | 96,478 |
+| Product revenue | 13,221,498.11 |
+| Freight value | 2,198,275.64 |
+| Total order value | 15,419,773.75 |
+| Average order value (AOV) | 159.83 |
+| Unique customers (all records) | 96,096 |
+| Unique customers with delivered orders | 93,358 |
+| Repeat customers | 2,801 |
+| Repeat customer rate | 3.00% |
+| Average delivered orders per customer | 1.03 |
+| Delivered orders without items | 0 |
+| Duplicate order, customer, and product IDs | 0 each |
+
+**Customer KPI clarification:** The repeat customer rate uses 93,358 customers with delivered orders as its denominator, not the 96,096 unique customers across all records.
+
+**Monthly validation:** October 2017 delivered-order value was 751,117.01; November 2017 was 1,153,364.20, representing 53.55% month-over-month growth.
+
+**Interpretation:** Total order value includes freight and is not profit. Monetary figures are reported in the dataset's original units.
 ## Analysis and Findings
 
 ### 1. Revenue and Monthly Performance
 
 [`02_revenue_analysis.sql`](sql/02_revenue_analysis.sql) calculates product revenue, freight, total delivered-order value, AOV, and monthly delivered-order value.
 
-- The reported total delivered-order value is approximately **15.42 million** in source-data monetary units.
-- **November 2017** was reported as the strongest month at approximately **1.15 million**.
-- A previously reported increase of approximately **53.6%** from October to November 2017 should be checked against the monthly query output before external publication.
+- Validated total delivered-order value: **15,419,773.75** in source-data monetary units.
+- October 2017 delivered-order value: **751,117.01**; November 2017: **1,153,364.20**.
+- Validated October-to-November 2017 growth: **53.55%**. This comparison alone does not establish November as the highest-revenue month across the full dataset.
 
 **Business interpretation:** A strong revenue month may reflect a seasonal event, changes in order volume, higher order values, or a combination. These queries describe the pattern; they do not establish its cause.
 
@@ -108,7 +117,9 @@ To obtain the **delivered-order unique-customer count and repeat-customer denomi
 - Average delivered orders per unique customer
 - A reconciliation of **all-record customers** versus **delivered-order customers**
 
-The reported delivered-only repeat rate is around **3%**, suggesting that repeat purchasing is relatively uncommon in this historical dataset.
+The validated repeat customer rate is **3.00%**: **2,801** customers placed more than one delivered order out of **93,358** unique customers with delivered orders. The average number of delivered orders per customer is **1.03**.
+
+The repeat-rate calculation uses `customer_unique_id`, not `customer_id`. The full dataset contains **96,096** unique customers, but that number is not the denominator for the delivered-order repeat rate.
 
 **Business interpretation:** This is a descriptive observation, not proof that a particular retention campaign would succeed. The observation window, marketplace context, and dataset coverage limit conclusions about long-term loyalty.
 
@@ -160,7 +171,7 @@ ecommerce-sql-analysis/
 4. Run `sql/02_revenue_analysis.sql` and `sql/03_product_analysis.sql` for delivered-order and category KPIs.
 5. Run `sql/04_customer_analysis.sql` to verify customer denominators and repeat behavior.
 6. Run `sql/05_advanced_sql.sql` for month-over-month growth, customer ranking, and running totals.
-7. Run [`sql/06_kpi_validation.sql`](sql/06_kpi_validation.sql) to reconcile delivered-order value, customer denominators, October/November 2017 growth, and key identifier uniqueness. Compare the results with the reported KPI table before publishing or merging.
+7. Run [`sql/06_kpi_validation.sql`](sql/06_kpi_validation.sql) to reconcile delivered-order value, customer denominators, October/November 2017 growth, and key identifier uniqueness. Compare the results with the validated KPI table above.
 
 **Reproducibility note:** This repository contains analytical queries, not a complete ETL pipeline or database schema creation scripts. Table import and setup are prerequisites.
 
@@ -173,7 +184,7 @@ ecommerce-sql-analysis/
 - Payment records can have a different grain from orders and order items.
 - Category labels come from the original product-category field; no translated-category mapping is included.
 - Observational patterns and correlations do not establish causal drivers.
-- Reported summary figures should be validated by rerunning SQL before use in external presentations.
+- The summary figures above were validated against the local PostgreSQL database. Results may differ if the dataset version, import process, or analytical filters change.
 
 ## Portfolio Focus
 
