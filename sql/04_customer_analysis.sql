@@ -52,3 +52,18 @@ WITH customer_orders AS (
 SELECT
     ROUND(AVG(order_count), 2) AS avg_orders_per_customer
 FROM customer_orders;
+
+-- Reconcile all customers with the delivered-order customer population.
+-- customer_id identifies an order-specific customer record; customer_unique_id
+-- is the identifier used for repeat purchasing across orders.
+SELECT
+    (SELECT COUNT(DISTINCT customer_unique_id) FROM customers)
+        AS unique_customers_all_records,
+    COUNT(DISTINCT c.customer_unique_id)
+        AS unique_customers_with_delivered_orders,
+    COUNT(DISTINCT o.order_id)
+        AS delivered_orders
+FROM orders o
+JOIN customers c
+    ON o.customer_id = c.customer_id
+WHERE o.order_status = 'delivered';
